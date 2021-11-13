@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Vivek Agrawal",
   "license": "MIT",
+  "engines": {
+    "node": "15.x"
+  },
   "scripts": {
     "build:dev": "webpack",
     "build:prod": "webpack -p --env production",
