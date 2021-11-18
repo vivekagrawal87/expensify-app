@@ -13,13 +13,14 @@ import { ref, get, set } from 'firebase/database';
 import expenses from '../fixtures/expenses';
 
 const createMockStore = configureMockStore([thunk]);
-
+const uid = 'thisIsTestUID';
+const defaultAuthState = { auth: { uid } };
 beforeEach((done) => {
     const expenseData = {};
     expenses.forEach(({ id, description, note, amount, createdAt }) => {
         expenseData[id] = { description, note, amount, createdAt };
     });
-    set(ref(db, 'expenses'), expenseData).then(() => done());
+    set(ref(db, `users/${uid}/expenses`), expenseData).then(() => done());
 });
 
 test('should setup remove expense action object', () => {
@@ -32,7 +33,7 @@ test('should setup remove expense action object', () => {
 });
 
 test('should remove expense from database and store', (done) => {
-    const store = createMockStore({});
+    const store = createMockStore(defaultAuthState);
     const id = expenses[1].id;
     store.dispatch(startRemoveExpense({ id })).then(() => {
         const actions = store.getActions();
@@ -41,7 +42,7 @@ test('should remove expense from database and store', (done) => {
             id
         });
 
-        return get(ref(db, `expenses/${id}`));
+        return get(ref(db, `users/${uid}/expenses/${id}`));
     }).then((snapshot) => {
         expect(snapshot.val()).toBeFalsy();
         done();
@@ -58,7 +59,7 @@ test('should setup edit expense action object', () => {
 });
 
 test('should edit expense in database and store', (done) => {
-    const store = createMockStore({});
+    const store = createMockStore(defaultAuthState);
     const id = expenses[0].id;
     const updates = { note: 'Indore Home Rent'};
     store.dispatch(startEditExpense(id, updates)).then(() => {
@@ -68,7 +69,7 @@ test('should edit expense in database and store', (done) => {
             id,
             updates
         });
-        return get(ref(db, `expenses/${id}`));
+        return get(ref(db, `users/${uid}/expenses/${id}`));
     }).then((snapshot) => {
         expect(snapshot.val().note).toEqual(updates.note);
         done();
@@ -84,7 +85,7 @@ test('should setup add expense action object with input', () => {
 });
 
 test('should add expense to database and store', (done) => {
-    const store = createMockStore({});//initilize mock store with empty state
+    const store = createMockStore(defaultAuthState);//initilize mock store with empty state
     const expenseData = {
         description: 'Keypad',
         amount: 15000,
@@ -102,7 +103,7 @@ test('should add expense to database and store', (done) => {
             }
         }
         expect(actions[0]).toEqual(expectedPayload);
-        return get(ref(db, `expenses/${actions[0].expense.id}`));
+        return get(ref(db, `users/${uid}/expenses/${actions[0].expense.id}`));
         
     }).then((snapshot) => {
         expect(snapshot.val()).toEqual(expenseData);
@@ -112,7 +113,7 @@ test('should add expense to database and store', (done) => {
 });
 
 test('should add expense with defaults to database and store', (done) => {
-    const store = createMockStore({});//initilize mock store with empty state
+    const store = createMockStore(defaultAuthState);//initilize mock store with empty state
     const expenseData = {
         description: '',
         amount: 0,
@@ -131,7 +132,7 @@ test('should add expense with defaults to database and store', (done) => {
         }
         expect(actions[0]).toEqual(expectedPayload);
 
-        return get(ref(db, `expenses/${actions[0].expense.id}`));
+        return get(ref(db, `users/${uid}/expenses/${actions[0].expense.id}`));
     }).then((snapshot) => {
         expect(snapshot.val()).toEqual(expenseData);
         done();
@@ -147,7 +148,7 @@ test('should setup set expense action object with data', () => {
 });
 
 test('should fetch the expenses from firebase', (done) => {
-    const store = createMockStore({});
+    const store = createMockStore(defaultAuthState);
     store.dispatch(startSetExpenses()).then(() => {
         const actions = store.getActions();
         expect(actions[0]).toEqual({
