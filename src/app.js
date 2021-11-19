@@ -7,7 +7,8 @@ import { login, logout } from './actions/auth';
 import { startSetExpenses } from './actions/expenses';
 import AppRouter, { history } from './routes/AppRouter';
 import configureStore from './store/configureStore';
-import getVisibleExpenses from './selectors/expenses'
+import getVisibleExpenses from './selectors/expenses';
+import LoadingPage from './components/LoadingPage';
 import { setTextFilter } from './actions/filters';
 import 'normalize.css/normalize.css';
 import './styles/styles.scss';
@@ -33,7 +34,7 @@ const renderApp = () => {
     }
 };
 
-ReactDOM.render(<p>Loading...</p>, document.getElementById('app'));
+ReactDOM.render(<LoadingPage />, document.getElementById('app'));
 
 getAuth().onAuthStateChanged((user) => {
     if(user) {
